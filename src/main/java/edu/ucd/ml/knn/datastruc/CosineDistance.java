@@ -1,5 +1,7 @@
 package edu.ucd.ml.knn.datastruc;
 
+import java.util.Comparator;
+
 /**
  * Created by Zuhaib on 11/13/2016.
  */
@@ -49,9 +51,18 @@ public class CosineDistance implements Comparable<CosineDistance> {
 
 
     public int compareTo(CosineDistance o) {
-        if(null== o){
-            System.out.println("eeee");
-        }
         return Double.compare(this.cosineDistance, o.getCosineDistance());
     }
+
+    public static Comparator<CosineDistance> CosineDistanceComparator
+            = new Comparator<CosineDistance>() {
+
+        public int compare(CosineDistance distance1, CosineDistance distance2) {
+
+            return Double.compare(distance2.getCosineDistance(),distance1.getCosineDistance());
+
+
+        }
+
+    };
 }

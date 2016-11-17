@@ -1,12 +1,15 @@
 package edu.ucd.ml.knn.helper;
 
-import edu.ucd.ml.knn.datastruc.DataMatrix;
 import org.la4j.Matrix;
 import org.la4j.iterator.VectorIterator;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -14,53 +17,41 @@ import java.util.Map;
  */
 public class DataPartitionHelper {
 
-    final int TRAINING_SET_SPLIT_PERCENTAGE = 30;
+    private final int TRAINING_SET_SPLIT_PERCENTAGE = 30;
 
-    private Map<Integer,DataMatrix> testDataMatrix;
-    private Map<Integer,DataMatrix> trainingDataMatrix;
+    private double[][] testDataArrayMatrix;
+    private double[][] trainingArrayDataMatrix;
 
-    public void splitDataIntoTrainingAndTest(Matrix sparseDataMatrix){
-        int rowsOfData=sparseDataMatrix.rows();
+    public void splitDataIntoTrainingAndTestFromMatrix(double[][] sparseDataMatrix){
+        int rowsOfData=sparseDataMatrix.length-1;
         int numRowsInTestSet     = rowsOfData* TRAINING_SET_SPLIT_PERCENTAGE/100;
-        int randomSeed=0;
+        int randomSeed;
         int testDataRowCounter=0;
         int trainingDataRowCounter=0;
         int[] randomRowNumberArray = new int[rowsOfData];
-        DataMatrix dataMatrix =null;
 
-        trainingDataMatrix = new LinkedHashMap<Integer, DataMatrix>();
-        testDataMatrix = new LinkedHashMap<Integer, DataMatrix>();
+        trainingArrayDataMatrix = new double[rowsOfData-numRowsInTestSet][sparseDataMatrix[rowsOfData].length] ;
+        testDataArrayMatrix = new double[numRowsInTestSet][(sparseDataMatrix[rowsOfData].length)] ;
 
+        int lastCoulumn=sparseDataMatrix[rowsOfData].length-1;
         for (int i = 0; i < randomRowNumberArray.length; i++) {
             randomRowNumberArray[i] = i;
         }
         Collections.shuffle(Arrays.asList(randomRowNumberArray));
 
-        for(int i=0;i <randomRowNumberArray.length;i++){
-            randomSeed =randomRowNumberArray[i];
-            if(randomSeed % 2==0 && testDataRowCounter <numRowsInTestSet){
-                dataMatrix = getColumnDataMatrix(sparseDataMatrix, randomSeed);
-                testDataMatrix.put(randomSeed,dataMatrix);
+        for (int aRandomRowNumberArray : randomRowNumberArray) {
+            randomSeed = aRandomRowNumberArray;
+            if (randomSeed % 2 == 0 && testDataRowCounter < numRowsInTestSet) {
+
+                testDataArrayMatrix[testDataRowCounter] = sparseDataMatrix[randomSeed];
+                testDataArrayMatrix[testDataRowCounter][lastCoulumn] = randomSeed + 1;
                 testDataRowCounter++;
-        }
-        else{
-                dataMatrix = getColumnDataMatrix(sparseDataMatrix, randomSeed);
-                trainingDataMatrix.put(randomSeed,dataMatrix);
+            } else {
+                trainingArrayDataMatrix[trainingDataRowCounter] = sparseDataMatrix[randomSeed];
+                trainingArrayDataMatrix[trainingDataRowCounter][lastCoulumn] = randomSeed + 1;
                 trainingDataRowCounter++;
+            }
         }
-        }
-    }
-
-    private DataMatrix getColumnDataMatrix(Matrix sparseDataMatrix, int randomSeed) {
-        VectorIterator vectorIterator =sparseDataMatrix.iteratorOfRow(randomSeed);
-        DataMatrix dataMatrix = new DataMatrix(sparseDataMatrix.columns());
-
-        while(vectorIterator.hasNext()){
-                int column_number=vectorIterator.index();
-                int column_value=vectorIterator.next().intValue();
-                dataMatrix.getColumnIndexes()[column_number+1]= column_value;
-        }
-        return dataMatrix;
     }
 
     public double[] calculateDocumentCountForIDF(Matrix sparseMatrix){
@@ -75,7 +66,7 @@ public class DataPartitionHelper {
                 if(column_value>0){
                     numberofDistinctDocumentsContainingTerm++;
                 }
-                System.out.println(i);
+
                 idfMatrix[i]=numberofDistinctDocumentsContainingTerm;
             }
             numberofDistinctDocumentsContainingTerm=0;
@@ -89,17 +80,15 @@ public class DataPartitionHelper {
             int rowCount=0;
             while(rowCount< sparseMatrix.rows()){
 
-                System.out.println("Row number is"+rowCount);
+
                 VectorIterator rowVectorIterator = sparseMatrix.iteratorOfRow(rowCount);
-                int count=0;
+
                 while(rowVectorIterator.hasNext()){
                     int column_number=rowVectorIterator.index();
                     int column_value=rowVectorIterator.next().intValue();
-                    if (column_value > 0) {
-                        System.out.println("********"+column_number);
-                    }
+
                 }
-                count++;
+
                 rowCount++;
 
             }
@@ -109,20 +98,39 @@ public class DataPartitionHelper {
         return null;
     }
 
-    public Map<Integer,DataMatrix> getTestDataMatrix() {
-        return testDataMatrix;
+    public Map<Double,String> getClassLabelOfData(String filename) throws IOException {
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(filename)));
+
+        String lineOfDataLabel;
+        String[] arrayOfClassLabels;
+        Map<Double,String> mapOfClassLabel = new HashMap<>();
+
+        while (true) {
+            lineOfDataLabel = bufferedReader.readLine();
+            if (lineOfDataLabel == null)
+                break;
+            arrayOfClassLabels = lineOfDataLabel.split(",");
+            double documentNumber = (Double.parseDouble(arrayOfClassLabels[0].trim()));
+            String classLabel = (arrayOfClassLabels[1].trim());
+            mapOfClassLabel.put(documentNumber,classLabel);
+
+        }
+        return mapOfClassLabel;
     }
 
-    public void setTestDataMatrix(Map<Integer,DataMatrix> testDataMatrix) {
-        this.testDataMatrix = testDataMatrix;
+    public double[][] getTestDataArrayMatrix() {
+        return testDataArrayMatrix;
     }
 
-    public Map<Integer,DataMatrix> getTrainingDataMatrix() {
-        return trainingDataMatrix;
+    public void setTestDataArrayMatrix(double[][] testDataArrayMatrix) {
+        this.testDataArrayMatrix = testDataArrayMatrix;
     }
 
-    public void setTrainingDataMatrix(Map<Integer,DataMatrix> trainingDataMatrix) {
-        this.trainingDataMatrix = trainingDataMatrix;
+    public double[][] getTrainingArrayDataMatrix() {
+        return trainingArrayDataMatrix;
     }
 
+    public void setTrainingArrayDataMatrix(double[][] trainingArrayDataMatrix) {
+        this.trainingArrayDataMatrix = trainingArrayDataMatrix;
+    }
 }

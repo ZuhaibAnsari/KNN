@@ -17,5 +17,5 @@ public class DataMatrix {
         this.columnIndexes = columnIndexes;
     }
 
-    int [] columnIndexes;
+    private int [] columnIndexes;
 }
