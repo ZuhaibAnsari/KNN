@@ -4,6 +4,7 @@ import java.util.Arrays;
 
 /**
  * Created by Zuhaib on 11/13/2016.
+ * This class is used for calculation of the nearest neighbours, similarities, and holding the cosine similarity results
  */
 public class CosineSimilarityResults {
     private int dataPointIndex;
@@ -17,31 +18,14 @@ public class CosineSimilarityResults {
         this.distances = distance;
     }
 
-    public int getDataPointIndex() {
-        return dataPointIndex;
-    }
+    /**
+     * This method is used to find the nearest neighbors
+     * @param kNeighbours is the number of nearest neighbours
+     * @param isWeightedKNN is used to check if the KNN is to be run as weighted or not
+     */
+    public void findKNearestNeighbours(int kNeighbours, boolean isWeightedKNN) {
 
-    public void setDataPointIndex(int dataPointIndex) {
-        this.dataPointIndex = dataPointIndex;
-    }
-
-    public CosineDistance[] getDistances() {
-        return distances;
-    }
-
-    public void setDistances(CosineDistance[] distances) {
-        this.distances = distances;
-    }
-
-    public int[] getKnnIndexes() {
-        return knnIndexes;
-    }
-
-    public void setKnnIndexes(int[] knnIndexes) {
-        this.knnIndexes = knnIndexes;
-    }
-
-    public void calculateKnn(int kNeighbours, boolean isWeightedKNN) {
+        //If it is weighted KNN use Inverse of Cosine Similarity distance as the weight
         if (isWeightedKNN) {
             for (CosineDistance distance : distances) {
                 if (distance.getCosineDistance() != 0) {
@@ -55,16 +39,21 @@ public class CosineSimilarityResults {
         } else {
             Arrays.sort(this.distances);
         }
-        int lastDistanceIndex = this.distances.length - 1;
+
+        //This is used to find the K nearest neigbours based on the cosine similarity
         this.knnIndexes = new int[kNeighbours];
         for (int i = 0; i < kNeighbours; i++) {
-            this.knnIndexes[i] = this.distances[lastDistanceIndex - i].getDataPointIndex();
+            this.knnIndexes[i] = this.distances[(this.distances.length - 1) - i].getDataPointIndex();
 
         }
     }
 
-
+    /**
+     * This method is used to predict the class label from the data
+     * @param isWeightedKNN is used to check if the classifier is run as weighted or not
+     */
     public void getPredictedClassLabelFromData(boolean isWeightedKNN) {
+        //If the KNN is weighted find the sum of similar class labels to find the most similar class label
         if (isWeightedKNN) {
             double sumOfWeightOfBusinessLabel = 0;
             double sumOfWeightOfPoliticsLabel = 0;
@@ -102,6 +91,7 @@ public class CosineSimilarityResults {
             }
 
         } else {
+            //If the KNN is not weighted find the count of similar class labels to find the most similar class label
             int countOfBusinessLabel = 0;
             int countOfPoliticsLabel = 0;
             int countOfSportsLabel = 0;
@@ -137,6 +127,30 @@ public class CosineSimilarityResults {
                 this.predictedClassLabel = "technology";
         }
 
+    }
+
+    public int getDataPointIndex() {
+        return dataPointIndex;
+    }
+
+    public void setDataPointIndex(int dataPointIndex) {
+        this.dataPointIndex = dataPointIndex;
+    }
+
+    public CosineDistance[] getDistances() {
+        return distances;
+    }
+
+    public void setDistances(CosineDistance[] distances) {
+        this.distances = distances;
+    }
+
+    public int[] getKnnIndexes() {
+        return knnIndexes;
+    }
+
+    public void setKnnIndexes(int[] knnIndexes) {
+        this.knnIndexes = knnIndexes;
     }
 
     public String[] getClassLabels() {

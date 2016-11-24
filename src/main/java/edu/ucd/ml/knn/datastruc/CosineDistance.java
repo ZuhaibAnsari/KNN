@@ -4,6 +4,7 @@ import java.util.Comparator;
 
 /**
  * Created by Zuhaib on 11/13/2016.
+ * This class will be used as the POJO for Cosine Distance , it will contain the index of the document and its cosine similarity distance
  */
 public class CosineDistance implements Comparable<CosineDistance> {
     private int dataPointIndex;

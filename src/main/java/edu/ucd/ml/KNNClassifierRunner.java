@@ -1,52 +1,18 @@
-package edu.ucd.ml.knn.core;
+package edu.ucd.ml;
 
+import edu.ucd.ml.knn.core.MatrixMarketFileReader;
 import edu.ucd.ml.knn.datastruc.CosineSimilarityResults;
 import edu.ucd.ml.knn.helper.CosineSimilarityHelper;
 import edu.ucd.ml.knn.helper.DataPartitionHelper;
 import edu.ucd.ml.knn.helper.KNNHelper;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.Map;
 import java.util.Scanner;
 
-/**
- * Created by Zuhaib on 11/6/2016.
- */
-public class MTXFileReaderLA4J {
-    public double[][] readMatrixMarketDataIntoArray(String filename) throws IOException {
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(filename)));
-        String lineOfMTXFile = bufferedReader.readLine();
 
-        boolean isCommentLine = true;
-        while (isCommentLine) {
-            lineOfMTXFile = bufferedReader.readLine();
-            isCommentLine = lineOfMTXFile.startsWith("%");
-        }
-
-        String[] mtxFileData = lineOfMTXFile.split(" ");
-        int numberOfUniqueDocuments = (Integer.parseInt(mtxFileData[0].trim()));
-        int numberOfUniqueWords = (Integer.parseInt(mtxFileData[1].trim()));
-
-        double[][] dataMatrix = new double[numberOfUniqueDocuments + 1][numberOfUniqueWords + 1];
-        while (true) {
-            lineOfMTXFile = bufferedReader.readLine();
-            if (lineOfMTXFile == null)
-                break;
-            mtxFileData = lineOfMTXFile.split("( )+");
-            int rowNumber = (Integer.parseInt(mtxFileData[0].trim())) - 1;
-            int columnNumber = (Integer.parseInt(mtxFileData[1].trim())) - 1;
-            int frequency = (Integer.parseInt(mtxFileData[2].trim()));
-
-            dataMatrix[rowNumber][columnNumber] = frequency;
-
-        }
-        return dataMatrix;
-    }
-
-
+public class KNNClassifierRunner
+{
     public static void main(String args[]) {
         try {
             System.out.println("Please enter the number of Nearest neighbours for the classifier :");
@@ -61,25 +27,30 @@ public class MTXFileReaderLA4J {
                 isWeightedKNN = true;
             }
 
-            String fileName = MTXFileReaderLA4J.class.getClassLoader().getResource("news_articles.mtx")
+            String fileName = MatrixMarketFileReader.class.getClassLoader().getResource("news_articles.mtx")
                     .getPath();
-            String classLabelFile = MTXFileReaderLA4J.class.getClassLoader().getResource("news_articles.labels")
+            String classLabelFile = MatrixMarketFileReader.class.getClassLoader().getResource("news_articles.labels")
                     .getPath();
 
-            MTXFileReaderLA4J mtxFileReader = new MTXFileReaderLA4J();
+            MatrixMarketFileReader mtxFileReader = new MatrixMarketFileReader();
             DataPartitionHelper dataPartitionHelper = new DataPartitionHelper();
             CosineSimilarityHelper cosineSimilarityHelper = new CosineSimilarityHelper();
             KNNHelper knnHelper = new KNNHelper();
             if(null !=fileName && null != classLabelFile){
+                System.out.println("Reading Matrix file ...");
                 double[][] dataMatrix = mtxFileReader.readMatrixMarketDataIntoArray(fileName);
 
+                System.out.println("Partitioning Data into Test and Training data ...");
                 dataPartitionHelper.splitDataIntoTrainingAndTestFromMatrix(dataMatrix);
                 Map<Double, String> classLabelMap = dataPartitionHelper.getClassLabelOfData(classLabelFile);
 
                 double[][] testData = dataPartitionHelper.getTestDataArrayMatrix();
                 double[][] trainingData = dataPartitionHelper.getTrainingArrayDataMatrix();
 
+                System.out.println("Calculating Cosine Similarity ...");
                 CosineSimilarityResults[] cosineSimilarityResults = cosineSimilarityHelper.calculateCosineSimilarity(testData, trainingData);
+
+                System.out.println("Finding Nearest Neighbours ..");
                 cosineSimilarityResults = knnHelper.findNearestNeighbours(kNeighbours, cosineSimilarityResults, classLabelMap, isWeightedKNN);
 
                 System.out.println("Accuracy of the classifier is " + knnHelper.calculateAccuracy(dataPartitionHelper.getTestDataArrayMatrix(), classLabelMap, cosineSimilarityResults));
