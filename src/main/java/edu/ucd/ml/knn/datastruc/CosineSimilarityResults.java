@@ -25,17 +25,9 @@ public class CosineSimilarityResults {
      */
     public void findKNearestNeighbours(int kNeighbours, boolean isWeightedKNN) {
 
-        //If it is weighted KNN use Inverse of Cosine Similarity distance as the weight
+        //If it is weighted KNN sort using the Cosine Distance Comparator
         if (isWeightedKNN) {
-            for (CosineDistance distance : distances) {
-                if (distance.getCosineDistance() != 0) {
-                    distance.setCosineDistance(1 / distance.getCosineDistance());
-                } else {
-                    distance.setCosineDistance(0);
-                }
-
-            }
-            Arrays.sort(this.distances, CosineDistance.CosineDistanceComparator);
+               Arrays.sort(this.distances, CosineDistance.CosineDistanceComparator);
         } else {
             Arrays.sort(this.distances);
         }

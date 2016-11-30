@@ -48,7 +48,7 @@ public class KNNClassifierRunner
                 double[][] trainingData = dataPartitionHelper.getTrainingArrayDataMatrix();
 
                 System.out.println("Calculating Cosine Similarity ...");
-                CosineSimilarityResults[] cosineSimilarityResults = cosineSimilarityHelper.calculateCosineSimilarity(testData, trainingData);
+                CosineSimilarityResults[] cosineSimilarityResults = cosineSimilarityHelper.calculateCosineSimilarity(testData, trainingData,isWeightedKNN);
 
                 System.out.println("Finding Nearest Neighbours ..");
                 cosineSimilarityResults = knnHelper.findNearestNeighbours(kNeighbours, cosineSimilarityResults, classLabelMap, isWeightedKNN);

@@ -59,6 +59,7 @@ public class CosineDistance implements Comparable<CosineDistance> {
             = new Comparator<CosineDistance>() {
 
         public int compare(CosineDistance distance1, CosineDistance distance2) {
+            double value = Double.compare(distance2.getCosineDistance(),distance1.getCosineDistance());
 
             return Double.compare(distance2.getCosineDistance(),distance1.getCosineDistance());
 
