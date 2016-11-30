@@ -46,7 +46,6 @@ public class CosineSimilarityHelper {
                 if(isWeightedKNN){
                     cosineSimilarity= Math.exp(-(cosineSimilarity*cosineSimilarity) / 2) / MathsHelper.squareRoot(2 * Math.PI);
                 }
-
                 cosineDistances[trainingRowsCount] = new CosineDistance(trainingDataKey, cosineSimilarity);
                 trainingRowsCount++;
             }
