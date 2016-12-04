@@ -1,7 +1,6 @@
 package edu.ucd.ml.knn.core;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
@@ -18,7 +17,7 @@ public class MatrixMarketFileReader {
      */
 
     public double[][] readMatrixMarketDataIntoArray(String filename) throws IOException {
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(filename)));
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(MatrixMarketFileReader.class.getResourceAsStream(filename)));
         String lineOfMTXFile = bufferedReader.readLine();
 
         //To read and skip the comment lines
@@ -40,6 +39,8 @@ public class MatrixMarketFileReader {
             if (lineOfMTXFile == null)
                 break;
             mtxFileData = lineOfMTXFile.split("( )+");
+
+            //Fetching row , column count and the document frequency
             int rowNumber = (Integer.parseInt(mtxFileData[0].trim())) - 1;
             int columnNumber = (Integer.parseInt(mtxFileData[1].trim())) - 1;
             int frequency = (Integer.parseInt(mtxFileData[2].trim()));

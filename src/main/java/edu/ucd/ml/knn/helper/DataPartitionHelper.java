@@ -1,13 +1,9 @@
 package edu.ucd.ml.knn.helper;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by Zuhaib on 11/10/2016.
@@ -28,30 +24,32 @@ public class DataPartitionHelper {
     public void splitDataIntoTrainingAndTestFromMatrix(double[][] sparseDataMatrix){
         int rowsOfData=sparseDataMatrix.length-1;
         int numRowsInTestSet     = rowsOfData* TRAINING_SET_SPLIT_PERCENTAGE/100;
-        int randomSeed;
         int testDataRowCounter=0;
         int trainingDataRowCounter=0;
-        int[] randomRowNumberArray = new int[rowsOfData];
+
+        //This is the array which will be used to shuffle the test and training data
+        List<Integer> randomRowNumberArray = new ArrayList<>(rowsOfData);
 
         trainingArrayDataMatrix = new double[rowsOfData-numRowsInTestSet][sparseDataMatrix[rowsOfData].length] ;
         testDataArrayMatrix = new double[numRowsInTestSet][(sparseDataMatrix[rowsOfData].length)] ;
 
-        int lastCoulumn=sparseDataMatrix[rowsOfData].length-1;
-        for (int i = 0; i < randomRowNumberArray.length; i++) {
-            randomRowNumberArray[i] = i;
+        int lastColumn=sparseDataMatrix[rowsOfData].length-1;
+        for (int i = 0; i < rowsOfData; i++) {
+            randomRowNumberArray.add(i);
         }
-        Collections.shuffle(Arrays.asList(randomRowNumberArray));
 
-        for (int aRandomRowNumberArray : randomRowNumberArray) {
-            randomSeed = aRandomRowNumberArray;
-            if (randomSeed % 2 == 0 && testDataRowCounter < numRowsInTestSet) {
+        //Shuffling the array of data index
+        Collections.shuffle(randomRowNumberArray);
 
-                testDataArrayMatrix[testDataRowCounter] = sparseDataMatrix[randomSeed];
-                testDataArrayMatrix[testDataRowCounter][lastCoulumn] = randomSeed + 1;
+        //Partitioning the data indexes into test and training data
+        for (int randomizedDataIndexes : randomRowNumberArray) {
+            if (testDataRowCounter < numRowsInTestSet) {
+                testDataArrayMatrix[testDataRowCounter] = sparseDataMatrix[randomizedDataIndexes];
+                testDataArrayMatrix[testDataRowCounter][lastColumn] = randomizedDataIndexes + 1;
                 testDataRowCounter++;
             } else {
-                trainingArrayDataMatrix[trainingDataRowCounter] = sparseDataMatrix[randomSeed];
-                trainingArrayDataMatrix[trainingDataRowCounter][lastCoulumn] = randomSeed + 1;
+                trainingArrayDataMatrix[trainingDataRowCounter] = sparseDataMatrix[randomizedDataIndexes];
+                trainingArrayDataMatrix[trainingDataRowCounter][lastColumn] = randomizedDataIndexes + 1;
                 trainingDataRowCounter++;
             }
         }
@@ -64,7 +62,7 @@ public class DataPartitionHelper {
      * @throws IOException
      */
     public Map<Double,String> getClassLabelOfData(String filename) throws IOException {
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(filename)));
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream(filename)));
 
         String lineOfDataLabel;
         String[] arrayOfClassLabels;
@@ -75,9 +73,12 @@ public class DataPartitionHelper {
             lineOfDataLabel = bufferedReader.readLine();
             if (lineOfDataLabel == null)
                 break;
+            //Splitting the line to get the document number and its class label
             arrayOfClassLabels = lineOfDataLabel.split(",");
             double documentNumber = (Double.parseDouble(arrayOfClassLabels[0].trim()));
             String classLabel = (arrayOfClassLabels[1].trim());
+
+            //Updating the hash map with the class label as value and document number as key
             mapOfClassLabel.put(documentNumber,classLabel);
 
         }

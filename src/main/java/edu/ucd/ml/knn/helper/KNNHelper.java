@@ -1,6 +1,6 @@
 package edu.ucd.ml.knn.helper;
 
-import edu.ucd.ml.knn.datastruc.CosineSimilarityResults;
+import edu.ucd.ml.knn.datastruc.CosineSimilarityOutput;
 
 import java.util.Map;
 
@@ -16,27 +16,34 @@ public class KNNHelper {
      * @param isWeightedKNN is use to check if the knn is weighted
      * @return an array containing the details of K nearest neighbours
      */
-    public CosineSimilarityResults[] findNearestNeighbours(int numberOfNeighbours, CosineSimilarityResults[] cosineSimilarityResult, Map<Double,String> mapOfClassLabel, boolean isWeightedKNN ){
-        for (CosineSimilarityResults aCosineSimilarityResult : cosineSimilarityResult) {
+    public CosineSimilarityOutput[] findNearestNeighbours(int numberOfNeighbours, CosineSimilarityOutput[] cosineSimilarityResult, Map<Double,String> mapOfClassLabel, boolean isWeightedKNN ){
+        for (CosineSimilarityOutput nearestNeighborSimilarityResults : cosineSimilarityResult) {
             //this is used as a sanity check to restrict the max number of neighbours to the size of test data
-            if (null != aCosineSimilarityResult) {
-                if (numberOfNeighbours >= aCosineSimilarityResult.getDistances().length) {
-                    numberOfNeighbours = aCosineSimilarityResult.getDistances().length;
+            if (null != nearestNeighborSimilarityResults) {
+                if (numberOfNeighbours >= nearestNeighborSimilarityResults.getCosineSimilarity().length) {
+                    numberOfNeighbours = nearestNeighborSimilarityResults.getCosineSimilarity().length;
                 }
-                aCosineSimilarityResult.findKNearestNeighbours(numberOfNeighbours, isWeightedKNN);
+                nearestNeighborSimilarityResults.findKNearestNeighbours(numberOfNeighbours, isWeightedKNN);
             }
 
-            int[] knnIndexes = aCosineSimilarityResult.getKnnIndexes();
+            //List of the nearest neighboring documents
+            int[] nearestNeighbouringDocuments = nearestNeighborSimilarityResults.getNearestNeighbouringDocuments();
 
             //this is used to find the class labels of the data and predicted class labels
-            if(null != knnIndexes){
-                String[] classLabels = new String[knnIndexes.length];
+            if(null != nearestNeighbouringDocuments){
+                String[] classLabelsOfNearestNeighbors = new String[nearestNeighbouringDocuments.length];
                 int neighboursCount = 0;
-                for (int knnIndex : knnIndexes) {
-                    classLabels[neighboursCount++] = mapOfClassLabel.get((double) knnIndex);
+
+                //This is used to find the actual class labels of all the nearest neighbors
+                for (int nearestNeighborIndex : nearestNeighbouringDocuments) {
+                    classLabelsOfNearestNeighbors[neighboursCount++] = mapOfClassLabel.get((double) nearestNeighborIndex);
                 }
-                aCosineSimilarityResult.setClassLabels(classLabels);
-                aCosineSimilarityResult.getPredictedClassLabelFromData(isWeightedKNN);
+
+                // This is used to set the actual class labels to be then used for predicting label
+                nearestNeighborSimilarityResults.setClassLabels(classLabelsOfNearestNeighbors);
+
+                //This is used to get the predicted class label of the test data
+                nearestNeighborSimilarityResults.getPredictedClassLabelOfTestData(isWeightedKNN);
             }
 
         }
@@ -51,15 +58,22 @@ public class KNNHelper {
      * @param knnResults is the array of results containing the details of the k nearest neighbours
      * @return the accuracy of the classifier
      */
-    public double calculateAccuracy(double[][] testData,Map<Double,String> mapOfClassLabels, CosineSimilarityResults[] knnResults) {
-        int actualCount = 0;
-        for (int i=0; i < testData.length;i++){
-            String actualClassLabel = mapOfClassLabels.get(testData[i][(testData[i].length-1)]);
-            if (actualClassLabel.equals(knnResults[i].getPredictedClassLabel())) {
-                actualCount++;
+    public double calculateAccuracy(double[][] testData,Map<Double,String> mapOfClassLabels, CosineSimilarityOutput[] knnResults) {
+
+        //This is used to keep track of the correctly predicted class labels count
+        int correctlyPredictedClassLabelsCount = 0;
+
+        //This is used to calculate the correctly predicted class label count
+        for (int testDataIndex=0; testDataIndex < testData.length;testDataIndex++){
+            //Fetching the actual class label of the data
+            String actualClassLabel = mapOfClassLabels.get(testData[testDataIndex][(testData[testDataIndex].length-1)]);
+
+            //Comparing the predicted and actual class label to find the correctly predicted class label count
+            if (actualClassLabel.equals(knnResults[testDataIndex].getPredictedClassLabel())) {
+                correctlyPredictedClassLabelsCount++;
             }
         }
-        return (double) (actualCount / (double) testData.length) * 100.0;
+        return (double) (correctlyPredictedClassLabelsCount / (double) testData.length) * 100.0;
     }
 
 }

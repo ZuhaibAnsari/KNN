@@ -1,7 +1,7 @@
 package edu.ucd.ml.knn.helper;
 
-import edu.ucd.ml.knn.datastruc.CosineDistance;
-import edu.ucd.ml.knn.datastruc.CosineSimilarityResults;
+import edu.ucd.ml.knn.datastruc.CosineSimilarity;
+import edu.ucd.ml.knn.datastruc.CosineSimilarityOutput;
 
 /**
  * Created by Zuhaib on 11/17/2016.
@@ -15,31 +15,34 @@ public class CosineSimilarityHelper {
      * @param isWeightedKNN this is to see if it is weightedKNN
      * @return an array of results  of cosine similarity
      */
-    public CosineSimilarityResults[] calculateCosineSimilarity(double[][] testDataMatrix, double[][] trainingDataMatrix, boolean isWeightedKNN){
-        CosineSimilarityResults[] cosineSimilarityResults = new CosineSimilarityResults[testDataMatrix.length];
+    public CosineSimilarityOutput[] calculateCosineSimilarity(double[][] testDataMatrix, double[][] trainingDataMatrix, boolean isWeightedKNN){
+        CosineSimilarityOutput[] cosineSimilarityResults = new CosineSimilarityOutput[testDataMatrix.length];
         int rowsCount =0;
-        for (double[] aTestDataMatrix : testDataMatrix) {
-            int columnCount = aTestDataMatrix.length - 1;
-            int testDataKey = (int) (aTestDataMatrix[columnCount]);
+        for (double[] inputTestData : testDataMatrix) {
+            int columnCount = inputTestData.length - 1;
+            int testDataKey = (int) (inputTestData[columnCount]);
             int trainingRowsCount = 0;
-            CosineDistance[] cosineDistances = new CosineDistance[trainingDataMatrix.length];
+            CosineSimilarity[] cosineSimilarities = new CosineSimilarity[trainingDataMatrix.length];
 
-            for (double[] aTrainingDataMatrix : trainingDataMatrix) {
-                int trainingDataKey = (int) (aTrainingDataMatrix[columnCount]);
+            for (double[] trainingData : trainingDataMatrix) {
+                int trainingDataKey = (int) (trainingData[columnCount]);
                 double dotProductOfVectors = 0;
                 double magnitudeOfTrainingVector = 0;
                 double magnitudeOfTestVector = 0;
 
+                //Calculating the dot product of the vectors to find the cosine similarity
                 for (int columnNumber = 0; columnNumber < columnCount; columnNumber++) {
-                    dotProductOfVectors += aTrainingDataMatrix[columnNumber] * aTestDataMatrix[columnNumber];
+                    dotProductOfVectors += trainingData[columnNumber] * inputTestData[columnNumber];
 
-                    magnitudeOfTrainingVector += (aTrainingDataMatrix[columnNumber] * aTrainingDataMatrix[columnNumber]);
-                    magnitudeOfTestVector += (aTestDataMatrix[columnNumber] * aTestDataMatrix[columnNumber]);
+                    magnitudeOfTrainingVector += (trainingData[columnNumber] * trainingData[columnNumber]);
+                    magnitudeOfTestVector += (inputTestData[columnNumber] * inputTestData[columnNumber]);
 
                 }
 
                 magnitudeOfTrainingVector = MathsHelper.squareRoot(magnitudeOfTrainingVector);
                 magnitudeOfTestVector = MathsHelper.squareRoot(magnitudeOfTestVector);
+
+                //The cosine similarity for the test data document
                 double cosineSimilarity=dotProductOfVectors / (magnitudeOfTrainingVector * magnitudeOfTestVector);
 
                 //If it is weighted KNN use a gaussian function to find the weighted similarity
@@ -47,11 +50,12 @@ public class CosineSimilarityHelper {
                     cosineSimilarity= Math.exp(-(cosineSimilarity*cosineSimilarity) / 2) / MathsHelper.squareRoot(2 * Math.PI);
                 }
 
-                cosineDistances[trainingRowsCount] = new CosineDistance(trainingDataKey, cosineSimilarity);
+                //updating the list of cosine similarity results for corresponding test data
+                cosineSimilarities[trainingRowsCount] = new CosineSimilarity(trainingDataKey, cosineSimilarity);
                 trainingRowsCount++;
             }
 
-            cosineSimilarityResults[rowsCount] = new CosineSimilarityResults(testDataKey, cosineDistances);
+            cosineSimilarityResults[rowsCount] = new CosineSimilarityOutput(testDataKey, cosineSimilarities);
             rowsCount++;
 
         }
