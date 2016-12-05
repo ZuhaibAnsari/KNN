@@ -6,7 +6,9 @@ import edu.ucd.ml.knn.helper.CosineSimilarityHelper;
 import edu.ucd.ml.knn.helper.DataPartitionHelper;
 import edu.ucd.ml.knn.helper.KNNHelper;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Map;
 import java.util.Scanner;
 
@@ -68,6 +70,9 @@ public class KNNClassifierRunner
                 double time2 = System.currentTimeMillis();
 
                 System.out.println("\nTime taken to run the classifier : "+(time2-time)/1000+" seconds");
+
+                BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+                in.readLine();
             }
             else {
                 System.out.println("Unable to Read Matrix market file");

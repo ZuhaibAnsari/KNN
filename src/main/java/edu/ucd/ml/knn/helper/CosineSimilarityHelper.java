@@ -47,7 +47,10 @@ public class CosineSimilarityHelper {
 
                 //If it is weighted KNN use a gaussian function to find the weighted similarity
                 if(isWeightedKNN){
-                    cosineSimilarity= Math.exp(-(cosineSimilarity*cosineSimilarity) / 2) / MathsHelper.squareRoot(2 * Math.PI);
+                    double cosineSimilarityWeight= Math.exp(-(cosineSimilarity*cosineSimilarity) / 2) / MathsHelper.squareRoot(2 * Math.PI);
+                    cosineSimilarity=cosineSimilarityWeight*dotProductOfVectors / (cosineSimilarityWeight*magnitudeOfTrainingVector * cosineSimilarityWeight*magnitudeOfTestVector);
+
+
                 }
 
                 //updating the list of cosine similarity results for corresponding test data

@@ -24,13 +24,8 @@ public class CosineSimilarityOutput {
      * @param isWeightedKNN is used to check if the KNN is to be run as weighted or not
      */
     public void findKNearestNeighbours(int kNeighbours, boolean isWeightedKNN) {
-
-        //If it is weighted KNN sort using the Cosine Distance Comparator
-        if (isWeightedKNN) {
-             Arrays.sort(this.cosineSimilarity, CosineSimilarity.CosineSimilarityComparator);
-        } else {
-            Arrays.sort(this.cosineSimilarity);
-        }
+        // Sorting the similarities to keep the most similar ones at the lowest i.e from 0 to 1
+        Arrays.sort(this.cosineSimilarity);
 
         //This is used to find the K nearest neighbors based on the cosine similarity
         this.nearestNeighbouringDocuments = new int[kNeighbours];
